@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Hangman</title>
+    </head>
+    <body style="font-size: 15pt; font-family: Consolas; margin: auto; max-width: 550px; text-align: center">
+    <p style="color: transparent" id="mess_to_usr">A</p>
+    <div><img id="hangmanPic" width="40%" src="0.png"/></div>
+    <span style="font-size: 25pt" id="guessProgress"></span><br><br>
+    Attempted Letters: <br> <span id="attemptArray"></span><br><br>
+    New Guess: <br> <input maxlength="1" type="text" id="letter"> <button onclick="my_function()">Submit Guess</button>
+    <br><br>
+    <form action="menu.html">
+        <input type="submit" value="Back to Main Menu"/>
+    </form>
+
+    <script>
+        // Get initial display string
+        const urlParams = new URLSearchParams(window.location.search);
+        const option = urlParams.get("q");
+        let ourRequest_s = new XMLHttpRequest();
+        ourRequest_s.open('GET', option);
+        history.replaceState(null, '', "game.html?q=reloadOrResume");
+        ourRequest_s.onload = function() {
+            let response = JSON.parse(ourRequest_s.responseText);
+            document.getElementById("attemptArray").innerHTML = response.attemptedString;
+            document.getElementById("guessProgress").innerHTML = response.guessProgress;
+            document.getElementById("hangmanPic").setAttribute("src", ""+response.wrongGuessCount+".png");
+        };
+        ourRequest_s.send();
+
+
+        // Guess logic
+        function my_function(){
+            // Fetch letter
+            let letter = document.getElementById('letter').value.toLowerCase();
+            // Check that input is not empty and not a number
+            if (! isNaN(letter) || /[^a-zA-Z]/.test(letter)) {
+                document.getElementById("mess_to_usr").innerHTML = "Please enter a single letter.";
+                document.getElementById("mess_to_usr").setAttribute("style", "color: red");
+                return;
+            }
+            // Send guess to server
+            let ourRequest = new XMLHttpRequest();
+            ourRequest.open('POST', 'submitGuess');
+            let guess = {
+                value:letter
+            };
+            ourRequest.send(JSON.stringify(guess));
+            // Accept server response
+            ourRequest.onload = function () {
+                let response = JSON.parse(ourRequest.responseText);
+                document.getElementById("attemptArray").innerHTML = response.attemptedString;
+                document.getElementById("mess_to_usr").innerHTML = response.userMessage;
+                document.getElementById("guessProgress").innerHTML = response.guessProgress;
+                document.getElementById("hangmanPic").setAttribute("src", ""+response.wrongGuessCount+".png");
+                if (response.userMessage == "Congratulations, you won!" || response.userMessage == "Correct!") {
+                    document.getElementById("mess_to_usr").setAttribute("style", "color: green");
+                } else {
+                    document.getElementById("mess_to_usr").setAttribute("style", "color: red");
+                }
+            };
+        }
+    </script>
+    </body>
+</html>

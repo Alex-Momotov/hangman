@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Games History</title>
+</head>
+<body style="font-size: 13pt; font-family: Consolas; margin: auto; margin-left: auto; margin-right: auto; max-width: 550px; text-align: center">
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <table style="border-spacing:25px; border-collapse: separate">
+        <thead>
+        <caption><h2>Played Games</h2></caption>
+            <tr>
+                <th>Secret Word</th>
+                <th>Guess Progress</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+    </table>
+    <br>
+    <form action="menu.html">
+        <input type="submit" value="Back to Main Menu"/>
+    </form>
+
+
+
+    <script>
+        let ourRequest_s = new XMLHttpRequest();
+        ourRequest_s.open('GET', "gamesHistory");
+        ourRequest_s.onload = function() {
+            let response = JSON.parse(ourRequest_s.responseText);
+            let newTable = '';
+            for (i = 0; i < response.length; ++i) {
+                let h = response[i];
+                console.log(h);
+                let secretW = h.secretWord;
+                let guessPr = h.guessProgress;
+                let statuS = h.status;
+                if (statuS == "Ongoing") secretW = "...";
+                let row = "<tr><td>"+secretW+"</td><td>"+guessPr+"</td><td>"+statuS+"</td></tr>";
+                newTable = row + newTable;
+            }
+            document.getElementById("tableBody").innerHTML = newTable;
+        };
+        ourRequest_s.send();
+    </script>
+</body>
+</html>
